@@ -1,13 +1,6 @@
-import { App, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-
-export class MyStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps = {}) {
-    super(scope, id, props);
-
-    // define resources here...
-  }
-}
+import { App } from 'aws-cdk-lib';
+import { CloudWatchLambdaDashboardStack } from './cdk-lambda-dashboard-stack';
+import { TransactionsAPI } from './cdk-transactions-api-lambda-construct';
 
 // for development, use account/region from cdk cli
 const devEnv = {
@@ -17,7 +10,19 @@ const devEnv = {
 
 const app = new App();
 
-new MyStack(app, 'cloudwatch-lambda-dashboard-dev', { env: devEnv });
-// new MyStack(app, 'cloudwatch-lambda-dashboard-prod', { env: prodEnv });
+const cloudWatchLambdaDashboardStack = new CloudWatchLambdaDashboardStack(app, 'TransactionsLambdaDashboardStack', {
+  dashboardName: 'TransactionsLambdaDashboard',
+  env: devEnv,
+});
+// const cloudWatchLambdaDashboardStack = new CloudWatchLambdaDashboardStack(app, 'TransactionsLambdaDashboardStack', {
+//   dashboardName: "TransactionsLambdaDashboard",
+//   env: devEnv
+// });
+
+new TransactionsAPI(cloudWatchLambdaDashboardStack, 'TransactionsApi');
+
+cloudWatchLambdaDashboardStack.addLambda('BeginTransaction', 'BeginTransaction');
+cloudWatchLambdaDashboardStack.addLambda('UpdateTransaction', 'UpdateTransaction');
+cloudWatchLambdaDashboardStack.addLambda('GetTransaction', 'GetTransaction');
 
 app.synth();
